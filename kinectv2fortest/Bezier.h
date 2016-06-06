@@ -6,7 +6,9 @@
 #include <Windows.h>
 #include <time.h>
 #include "NeonDesign.h"
+#include "ExecuteSpaceFiltering.h"
 
+#define FILTERSIZE 49
 using namespace std;
 
 class Bezier{
@@ -54,13 +56,32 @@ public:
 					//3次のベジエ曲線
 					int y = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).first + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).first + 3 * (1 - t)*t*t*vec[i].at(j + 2).first + t*t*t*vec[i].at(j + 3).first;
 					int x = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).second + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).second + 3 * (1 - t)*t*t*vec[i].at(j + 2).second + t*t*t*vec[i].at(j + 3).second;
-					circle(image, cv::Point(x, y), 1, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(image, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 				}
 			}
 		}
 	}
+	void exeGaussian(vector<vector<pair<int, int>>> &vec, cv::Mat &image){
+		NeonDesign design;
+		ExecuteSpaceFiltering spaceFilter(FILTERSIZE);
+		for (int i = 0; i < vec.size(); i++){
+			for (int j = 0; j < vec[i].size() - 1; j += 3){
+				adjust(vec[i], j);
+				if (j >= vec[i].size() || j + 1 >= vec[i].size() || j + 2 >= vec[i].size() || j + 3 >= vec[i].size()) break;
+				for (double t = 0.0; t <= 1.0; t = t + 0.02){
+					// 0.0 <= t && t <= 1.0 とする。この値を変化させて曲線を作る
+					//3次のベジエ曲線
+					int y = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).first + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).first + 3 * (1 - t)*t*t*vec[i].at(j + 2).first + t*t*t*vec[i].at(j + 3).first;
+					int x = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).second + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).second + 3 * (1 - t)*t*t*vec[i].at(j + 2).second + t*t*t*vec[i].at(j + 3).second;
+					spaceFilter.executeSpaceFilteringYX(y, x, image);
+				}
+			}
+		}
+	}
+
 	void drawBezier(vector<vector<pair<int, int>>> &forBezier, cv::Mat &image, int hue){
 		NeonDesign design;
+		ExecuteSpaceFiltering spaceFilter(FILTERSIZE);
 		vector<int> bgr = { 0, 0, 0 };
 		design.rgb(hue, 255, 255 - 100, bgr);
 		//cv::Mat bezierResult = cv::Mat(image.rows * SCALE, image.cols * SCALE, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -74,14 +95,21 @@ public:
 					//3次のベジエ曲線
 					int y = (1 - t)*(1 - t)*(1 - t)*forBezier[i].at(j).first + 3 * (1 - t)*(1 - t)*t*forBezier[i].at(j + 1).first + 3 * (1 - t)*t*t*forBezier[i].at(j + 2).first + t*t*t*forBezier[i].at(j + 3).first;
 					int x = (1 - t)*(1 - t)*(1 - t)*forBezier[i].at(j).second + 3 * (1 - t)*(1 - t)*t*forBezier[i].at(j + 1).second + 3 * (1 - t)*t*t*forBezier[i].at(j + 2).second + t*t*t*forBezier[i].at(j + 3).second;
-				//	circle(image, cv::Point(x, y), 5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
-					image.at<cv::Vec3b>(y, x)[0] = 255; // b; //青
-					image.at<cv::Vec3b>(y, x)[1] = 255; // g; //緑
-					image.at<cv::Vec3b>(y, x)[2] = 255; // r; //赤
+					circle(image, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					
+					//image.at<cv::Vec3b>(y, x)[0] = 255; // b; //青
+					//image.at<cv::Vec3b>(y, x)[1] = 255; // g; //緑
+					//image.at<cv::Vec3b>(y, x)[2] = 255; // r; //赤
+//					spaceFilter.executeSpaceFilteringYX(y, x, image);
+
 				}
 			}
 		}
 		//cv::GaussianBlur(image, image, cv::Size(19, 15), 0, 0);
+		//exeGaussian(forBezier, image);
+		spaceFilter.executeSpaceFilteringAll(image);
+		cv::imshow("spaceFilter image", spaceFilter.image2);
+
 		//drawInline(forBezier, image, hue);
 	}
 };
