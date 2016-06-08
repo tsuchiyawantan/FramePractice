@@ -15,12 +15,19 @@ class ExecuteSpaceFiltering{
 private:
 public:
 	vector<double> filter;
-	ExecuteSpaceFiltering(double filter_size){
-	}
-
-	~ExecuteSpaceFiltering(){}
+	double filtersize;
 	cv::Mat image2;
 
+	ExecuteSpaceFiltering(double filter_size){
+		filtersize = filter_size;
+	}
+	~ExecuteSpaceFiltering(){}
+
+	void createFilter(){
+		double filter_value = 1 / filtersize;
+		for (int i = 0; i < filtersize; i++)
+			filter.push_back(filter_value);
+	}
 	void createNeighbour(int size, vector<pair<int, int>> &neighbour){
 		// 範囲チェック
 		if (size < 3) {
@@ -32,7 +39,27 @@ public:
 		size--;
 		size /= 2;
 
-		float sigma = 2.0;
+		createFilter();
+
+		for (int y = -size; y <= size; y++) {
+			for (int x = -size; x <= size; x++) {
+				neighbour.push_back(make_pair(y, x));
+			}
+		}
+	}
+
+	void createNeighbourGaussian(int size, vector<pair<int, int>> &neighbour){
+		// 範囲チェック
+		if (size < 3) {
+			size = 3;
+		}
+		if (size > 15) {
+			size = 15;
+		}
+		size--;
+		size /= 2;
+
+		float sigma = 1.0;
 		float sum = 0;
 		for (int y = -size; y <= size; y++) {
 			for (int x = -size; x <= size; x++) {
@@ -71,8 +98,10 @@ public:
 	void executeSpaceFilteringYX(int y, int x, cv::Mat &input1){
 		vector<pair<int, int>> neighbour;
 		vector<double> bgr(3, 0.0);
+		int width = input1.cols;
+		int height = input1.rows;
 		filter.clear();
-		createNeighbour(sqrt(filter.size()), neighbour);
+		createNeighbour(sqrt(filtersize), neighbour);
 		applyFiltering(y, x, neighbour, bgr, input1);
 
 		// valueR, valueG, valueB の値を0～255の範囲にする
@@ -97,7 +126,7 @@ public:
 		image2 = cv::Mat(input1.size(), input1.type(), cvScalarAll(255));
 		int width = input1.cols;
 		int height = input1.rows;
-		createNeighbour(sqrt(filter.size()), neighbour);
+		createNeighbour(sqrt(filtersize), neighbour);
 
 		//
 		// 各スキャンラインごとに

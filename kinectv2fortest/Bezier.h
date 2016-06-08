@@ -8,7 +8,7 @@
 #include "NeonDesign.h"
 #include "ExecuteSpaceFiltering.h"
 
-#define FILTERSIZE 49
+#define FILTERSIZE 225
 using namespace std;
 
 class Bezier{
@@ -56,7 +56,7 @@ public:
 					//3次のベジエ曲線
 					int y = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).first + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).first + 3 * (1 - t)*t*t*vec[i].at(j + 2).first + t*t*t*vec[i].at(j + 3).first;
 					int x = (1 - t)*(1 - t)*(1 - t)*vec[i].at(j).second + 3 * (1 - t)*(1 - t)*t*vec[i].at(j + 1).second + 3 * (1 - t)*t*t*vec[i].at(j + 2).second + t*t*t*vec[i].at(j + 3).second;
-					circle(image, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(image, cv::Point(x, y), 0.5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 				}
 			}
 		}
@@ -95,21 +95,22 @@ public:
 					//3次のベジエ曲線
 					int y = (1 - t)*(1 - t)*(1 - t)*forBezier[i].at(j).first + 3 * (1 - t)*(1 - t)*t*forBezier[i].at(j + 1).first + 3 * (1 - t)*t*t*forBezier[i].at(j + 2).first + t*t*t*forBezier[i].at(j + 3).first;
 					int x = (1 - t)*(1 - t)*(1 - t)*forBezier[i].at(j).second + 3 * (1 - t)*(1 - t)*t*forBezier[i].at(j + 1).second + 3 * (1 - t)*t*t*forBezier[i].at(j + 2).second + t*t*t*forBezier[i].at(j + 3).second;
-					circle(image, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(image, cv::Point(x, y), 1, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 					
 					//image.at<cv::Vec3b>(y, x)[0] = 255; // b; //青
 					//image.at<cv::Vec3b>(y, x)[1] = 255; // g; //緑
 					//image.at<cv::Vec3b>(y, x)[2] = 255; // r; //赤
-//					spaceFilter.executeSpaceFilteringYX(y, x, image);
-
+					//spaceFilter.executeSpaceFilteringYX(y, x, image);
 				}
 			}
 		}
 		//cv::GaussianBlur(image, image, cv::Size(19, 15), 0, 0);
-		//exeGaussian(forBezier, image);
-		spaceFilter.executeSpaceFilteringAll(image);
-		cv::imshow("spaceFilter image", spaceFilter.image2);
+		exeGaussian(forBezier, image);
+		//spaceFilter.executeSpaceFilteringAll(image);
+		//cv::imshow("spaceFilter image", spaceFilter.image2);
+		
+		//drawInline(forBezier, spaceFilter.image2, hue);
+		//cv::imshow("spaceFilter Bazier image", spaceFilter.image2);
 
-		//drawInline(forBezier, image, hue);
 	}
 };
