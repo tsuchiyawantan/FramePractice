@@ -84,25 +84,25 @@ public:
 
 	}
 
-	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &image){
+	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &srcImg){
 		for (int i = 0; i < neighbour.size(); i++){
 			int dy = y + neighbour.at(i).first;
 			int dx = x + neighbour.at(i).second;
-			if (dy < 0 || dy >= image.rows || dx < 0 || dx >= image.cols) continue;
-			bgr.at(0) += image.at<cv::Vec3b>(dy, dx)[0] * filter.at(i);
-			bgr.at(1) += image.at<cv::Vec3b>(dy, dx)[1] * filter.at(i);
-			bgr.at(2) += image.at<cv::Vec3b>(dy, dx)[2] * filter.at(i);
+			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
+			bgr.at(0) += srcImg.at<cv::Vec3b>(dy, dx)[0] * filter.at(i);
+			bgr.at(1) += srcImg.at<cv::Vec3b>(dy, dx)[1] * filter.at(i);
+			bgr.at(2) += srcImg.at<cv::Vec3b>(dy, dx)[2] * filter.at(i);
 		}
 	}
 
-	void executeSpaceFilteringYX(int y, int x, cv::Mat &input1){
+	void executeSpaceFilteringYX(int y, int x, cv::Mat &srcImg, cv::Mat &resultImg){
 		vector<pair<int, int>> neighbour;
 		vector<double> bgr(3, 0.0);
-		int width = input1.cols;
-		int height = input1.rows;
+		int width = srcImg.cols;
+		int height = srcImg.rows;
 		filter.clear();
 		createNeighbour(sqrt(filtersize), neighbour);
-		applyFiltering(y, x, neighbour, bgr, input1);
+		applyFiltering(y, x, neighbour, bgr, srcImg);
 
 		// valueR, valueG, valueB の値を0～255の範囲にする
 		if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
@@ -112,20 +112,20 @@ public:
 		if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
 		if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
 
-		input1.at<cv::Vec3b>(y, x)[0] = bgr.at(0);
-		input1.at<cv::Vec3b>(y, x)[1] = bgr.at(1);
-		input1.at<cv::Vec3b>(y, x)[2] = bgr.at(2);
+		resultImg.at<cv::Vec3b>(y, x)[0] = bgr.at(0);
+		resultImg.at<cv::Vec3b>(y, x)[1] = bgr.at(1);
+		resultImg.at<cv::Vec3b>(y, x)[2] = bgr.at(2);
 	}
 
 	//
 	// 空間フィルタリングを用いた画像処理の例
 	//
-	void executeSpaceFilteringAll(cv::Mat &input1) {
+	void executeSpaceFilteringAll(cv::Mat &srcImg) {
 		vector<pair<int, int>> neighbour;
 		vector<double> bgr(3, 0.0);
-		image2 = cv::Mat(input1.size(), input1.type(), cvScalarAll(255));
-		int width = input1.cols;
-		int height = input1.rows;
+		image2 = cv::Mat(srcImg.size(), srcImg.type(), cvScalarAll(255));
+		int width = srcImg.cols;
+		int height = srcImg.rows;
 		createNeighbour(sqrt(filtersize), neighbour);
 
 		//
@@ -140,7 +140,7 @@ public:
 				bgr = { 0.0, 0.0, 0.0 };
 				int y = i;
 				int x = j;
-				applyFiltering(y, x, neighbour, bgr, input1);
+				applyFiltering(y, x, neighbour, bgr, srcImg);
 
 				// valueR, valueG, valueB の値を0～255の範囲にする
 				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
