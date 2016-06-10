@@ -9,8 +9,10 @@
 #include "NeonDesign.h"
 #include "Log.h"
 #include "ArmMovements.h"
+#include "CatmullSpline.h"
 #include "Gaussian.h"
-
+#define SPACESIZE 10
+#define SCALESIZE 1
 #define HUE 60
 
 string hstate[] = { "unknown", "nottracked", "Open", "Closed", "Lasso" };
@@ -27,14 +29,7 @@ string str(pair<int, int> left, pair<int, int>right) {
 	ss << str(left) << " " << str(right);
 	return ss.str();
 }
-void doBezier(vector<vector<pair<int, int>>> &forBezier, cv::Mat &image, int hue, Log log){
-	Bezier bezier;
-	clock_t start = clock();
-	bezier.bezierLike(forBezier, image);
-	clock_t end = clock();
-	bezier.drawBezier(forBezier, image, hue);
-	cv::imshow("bezier image", image);
-}
+
 void doArm(cv::Mat &image, Log log){
 	ArmMovements arm;
 	//arm.drawArmMove(image); 
@@ -71,23 +66,27 @@ void doArm2(cv::Mat &image, Log log, vector<vector<pair<int, int>>> &yx){
 		arm.drawInline(img, yx[i], HUE);
 	cv::imshow("arm image", img);
 }
-
-void doDot(cv::Mat &image, int hue, Log log){
-	Dot dot;
-	clock_t start = clock();
-	dot.setWhiteDots(image, dot.dots);
-	clock_t end = clock();
-	dot.findStart(image, dot.dots, dot.start);
-	dot.makeLine(dot.contours, dot.start, dot.dots, dot.used, image);
-	dot.makeSpace(dot.contours, dot.forBezier);
-	dot.scalable(dot.forBezier);
-	dot.writeDots(dot.forBezier, image, dot.dots);
-	
-	doBezier(dot.forBezier, image, hue, log);
-	//doArm(image, log, dot.forBezier);
-	dot.init();
+void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLine){
+	cv::Mat resultImg = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+	CatmullSpline catmull;
+	for (int i = 0; i < approximationLine.size(); i++){
+		catmull.drawLine(resultImg, approximationLine[i], HUE);
+	}
+	for (int i = 0; i < approximationLine.size(); i++){
+		catmull.drawInline(resultImg, approximationLine[i], HUE);
+	}
+	cv::imshow("Catmull Spline", resultImg);
 }
 
+void doDot(cv::Mat &srcImg){
+	Dot dot;
+	dot.setWhiteDots(srcImg);
+	dot.findStart(srcImg);
+	dot.makeLine(srcImg);
+	dot.makeSpace(SPACESIZE);
+	dot.scalable(SCALESIZE);
+	doCatmull(srcImg, dot.approximationLine);
+}
 void main() {
 	try {
 		Log log;
@@ -99,7 +98,7 @@ void main() {
 			threshold(src_img, src_img, 150, 255, CV_THRESH_BINARY);
 			//threshold(line_img, line_img, 150, 255, CV_THRESH_BINARY);
 			cv::imshow("src_img", src_img);
-			doDot(src_img, 60, log);
+			doDot(src_img);
 			//doArm(line_img, log);
 			//cv::imshow("complete image", src_img);
 			//cv::imshow("line image", line_img);
