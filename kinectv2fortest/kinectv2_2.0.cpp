@@ -72,9 +72,7 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	for (int i = 0; i < approximationLine.size(); i++){
 		catmull.drawLine(resultImg, approximationLine[i], HUE);
 	}
-	for (int i = 0; i < approximationLine.size(); i++){
-		catmull.drawInline(resultImg, approximationLine[i], HUE);
-	}
+	catmull.drawInline(resultImg, HUE);
 	cv::imshow("Catmull Spline", resultImg);
 }
 
