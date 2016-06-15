@@ -77,7 +77,6 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	//Opencv Gaussian
 	cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
 	catmull.drawInline(resultImg, HUE);
-	cv::imwrite("catmullFL.png", resultImg);
 	cv::imshow("Catmull Spline", resultImg);
 }
 
