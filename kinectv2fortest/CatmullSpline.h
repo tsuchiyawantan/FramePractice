@@ -13,7 +13,6 @@ using namespace std;
 class CatmullSpline{
 private:
 public:
-	vector<pair<int, int>> contour;
 	vector<vector<pair<int, int>>> catmullLine;
 	cv::Mat resultImg;
 
@@ -108,7 +107,8 @@ public:
 					circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 				}
 			}
-			catmullLine.push_back(ctr);
 		}
+		catmullLine.push_back(ctr);
+
 	}
 };
