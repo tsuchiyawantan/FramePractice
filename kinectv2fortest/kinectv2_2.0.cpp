@@ -13,6 +13,7 @@
 #include "Gaussian.h"
 #define SPACESIZE 10
 #define SCALESIZE 1
+#define FILTERSIZE 81
 #define HUE 60
 
 string hstate[] = { "unknown", "nottracked", "Open", "Closed", "Lasso" };
@@ -74,9 +75,10 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	}
 	//SpaceFiltering
 	//catmull.exeGaussian(approximationLine, resultImg);
+	
 	//Opencv Gaussian
-	cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
-	catmull.drawInline(resultImg, HUE);
+	//cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
+	catmull.drawInline(resultImg, HUE, FILTERSIZE);
 	cv::imshow("Catmull Spline", resultImg);
 }
 

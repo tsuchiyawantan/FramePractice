@@ -52,7 +52,6 @@ public:
 	void exeGaussian(vector<vector<pair<int, int>>> &vec, cv::Mat &srcImg, int filtersize){
 		ExecuteSpaceFiltering spaceFilter(filtersize);
 		resultImg = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(255, 255, 255));
-
 		for (int y = 0; y < srcImg.rows; y++){
 			for (int x = 0; x < srcImg.cols; x++){
 				if (check8(srcImg, y, x)) {
@@ -63,8 +62,9 @@ public:
 		srcImg = resultImg;
 	}
 
-	void drawInline(cv::Mat &srcImg, int hue){
+	void drawInline(cv::Mat &srcImg, int hue, int filtersize){
 		NeonDesign design;
+		ExecuteSpaceFiltering spf(filtersize);
 		vector<int> bgr = { 0, 0, 0 };
 		design.rgb(hue, 255 - 100, 255, bgr);
 
@@ -72,14 +72,17 @@ public:
 			for (int j = 0; j < catmullLine[i].size(); j++){
 				int y = catmullLine[i].at(j).first;
 				int x = catmullLine[i].at(j).second;
-				circle(srcImg, cv::Point(x, y), 0.5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+				//circle(srcImg, cv::Point(x, y), 0.5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+				spf.executeSpaceFilteringYX(y, x, srcImg, srcImg);
 			}
 		}
+
 	}
 	void drawLine(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;
 		vector<int> bgr = { 0, 0, 0 };
 		vector<pair<int, int>> ctr;
+
 		design.rgb(hue, 255, 255 - 100, bgr);
 		for (int i = 0; i < contours.size(); i++){
 			int y = contours.at(i).first;
@@ -109,6 +112,5 @@ public:
 			}
 		}
 		catmullLine.push_back(ctr);
-
 	}
 };
